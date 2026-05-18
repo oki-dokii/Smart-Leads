@@ -1,189 +1,167 @@
 # Smart Leads CRM
 
-Smart Leads is a robust, production-grade Customer Relationship Management (CRM) platform designed to streamline lead acquisition and sales tracking. Engineered as a MERN monorepo, it offers a secure, role-based ecosystem where sales agents can track personal pipelines while administrators oversee the entire dataset. With built-in features like CSV data export, intelligent filtering, and responsive dark mode, it provides an intuitive and powerful experience for modern sales teams.
+Smart Leads is a production-grade Customer Relationship Management (CRM) platform designed to streamline lead acquisition and sales tracking. Built as a MERN monorepo, it offers a secure, role-based ecosystem where sales agents track their own pipelines while administrators oversee the entire dataset. Features include CSV export, intelligent filtering, pagination, and responsive dark mode.
 
 <p align="center">
-  <a href="#deployment"><strong>View Live Demo (Placeholder)</strong></a>
+  <a href="https://smart-leads-client.vercel.app"><strong>View Live Demo</strong></a>
 </p>
 
-## ✨ Features Checklist
-- [x] **Monorepo Architecture:** Seamlessly orchestrated frontend and backend workspaces.
-- [x] **Strict TypeScript:** 100% type-checked across both client and server boundaries.
-- [x] **JWT Authentication:** Secure stateless authentication with token persistence.
-- [x] **Role-Based Access Control (RBAC):** Admin and Sales Agent hierarchy.
-- [x] **Full-Text Search & Filtering:** Debounced queries with dynamic URL synchronization.
-- [x] **CSV Exports:** One-click generation of matching leads into downloadable CSV format.
-- [x] **Dark Mode:** Elegant, system-synced Light/Dark mode toggling.
-- [x] **Containerization:** Fully Dockerized with multi-stage builds and database persistence.
-- [x] **Standardized Error Handling:** Global API error interceptors yielding consistent responses.
+---
+
+## Features
+
+- **JWT Authentication** — Secure stateless auth with token persistence in localStorage
+- **Role-Based Access Control** — Admin and Sales role hierarchy enforced on both frontend and backend
+- **Lead Management** — Full CRUD: create, view, edit, update status, and delete leads
+- **Search & Filtering** — Debounced search, filter by status and source, sort by date
+- **Pagination** — Server-side pagination with configurable page size
+- **CSV Export** — One-click download of filtered leads
+- **Dark Mode** — System-synced light/dark toggle, preference persisted across sessions
+- **Dockerized** — Multi-stage Docker builds with Nginx for the frontend and MongoDB for the database
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
-- **Framework:** React 18 + Vite
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Routing:** React Router v6
-- **HTTP Client:** Axios
-- **Icons:** Lucide React
+- React 18 + Vite
+- TypeScript
+- Tailwind CSS
+- React Router v7
+- Axios
 
 ### Backend
-- **Framework:** Node.js + Express
-- **Language:** TypeScript
-- **Database:** MongoDB (Mongoose)
-- **Authentication:** JWT (JSON Web Tokens)
-- **Validation:** express-validator
-- **Security:** bcryptjs, helmet, cors
+- Node.js + Express
+- TypeScript
+- MongoDB + Mongoose
+- JWT + bcryptjs
+- express-validator
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-```mermaid
-graph TD
-    Client[React + Vite Frontend] -->|Axios REST Calls| Gateway[Express API]
-    Gateway --> Auth[Auth Middleware & RBAC]
-    Auth --> Router[API Routes]
-    Router --> Controller[Controllers]
-    Controller --> Model[Mongoose Models]
-    Model --> DB[(MongoDB Database)]
-    
-    subgraph Containerized Infrastructure
-        Client
-        Gateway
-        DB
-    end
+```
+React (Vercel) → Express API (Vercel) → MongoDB Atlas
 ```
 
+- Frontend calls the API via Axios using `VITE_API_URL`
+- API authenticates requests via JWT middleware
+- RBAC enforced per route — sales users are scoped to their own leads via `createdBy` filter
+- Admin users have unrestricted access including delete
+
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/en) (v18.0.0 or higher)
-- [Docker](https://www.docker.com/) and Docker Compose (if using containers)
+- Node.js v18+
+- Docker and Docker Compose (for containerised setup)
 
-### Option 1: Docker (Recommended)
+### Option 1: Docker
 
-1. Clone the repository and navigate into the project directory:
-   ```bash
-   cd smart-leads
-   ```
-2. Copy the example environment files for both packages:
-   ```bash
-   cp server/.env.example server/.env
-   cp client/.env.example client/.env
-   ```
-3. Start the application using Docker Compose:
-   ```bash
-   docker-compose up --build
-   ```
-4. Access the client at `http://localhost:80` and the API at `http://localhost:5001`.
+```bash
+git clone https://github.com/oki-dokii/Smart-Leads.git
+cd smart-leads
+docker compose up --build
+```
 
-### Option 2: Local Development (Without Docker)
+Access the app at `http://localhost:80` and the API at `http://localhost:5001`.
 
-1. Clone the repository:
-   ```bash
-   cd smart-leads
-   ```
-2. Make sure you have a local instance of MongoDB running on `mongodb://localhost:27017/smart-leads`.
-3. Set up the `server`:
-   ```bash
-   cd server
-   cp .env.example .env
-   npm install
-   npm run dev
-   ```
-4. In a separate terminal, set up the `client`:
-   ```bash
-   cd client
-   cp .env.example .env
-   npm install
-   npm run dev
-   ```
+### Option 2: Local Development
+
+**Terminal 1 — Backend**
+```bash
+cd server
+cp .env.example .env   # fill in MONGODB_URI, JWT_SECRET
+npm install
+npm run dev
+```
+
+**Terminal 2 — Frontend**
+```bash
+cd client
+npm install
+npm run dev
+```
+
+App runs at `http://localhost:5173`.
 
 ---
 
-## 🔐 Environment Variables
-
-Ensure the following variables are configured in your respective `.env` files.
+## Environment Variables
 
 ### Server (`server/.env`)
 
-| Key | Description | Example Value |
-| --- | ----------- | ------------- |
-| `PORT` | API listening port | `5001` |
+| Key | Description | Example |
+|---|---|---|
+| `PORT` | API port | `5001` |
 | `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/smart-leads` |
-| `JWT_SECRET` | Secret key for signing JWTs | `super_secret_jwt_key_123` |
-| `JWT_EXPIRES_IN` | Lifespan of generated tokens | `7d` |
+| `JWT_SECRET` | JWT signing secret | `your_secret_key` |
+| `JWT_EXPIRES_IN` | Token lifespan | `7d` |
 | `CLIENT_URL` | Allowed CORS origin | `http://localhost:5173` |
 
 ### Client (`client/.env`)
 
-| Key | Description | Example Value |
-| --- | ----------- | ------------- |
-| `VITE_API_URL` | Base URL targeting the Express backend | `http://localhost:5001/api` |
+| Key | Description | Example |
+|---|---|---|
+| `VITE_API_URL` | Backend base URL | `http://localhost:5001/api` |
 
 ---
 
-## 📚 API Reference
+## API Reference
 
-All requests must be prefixed with `/api`. Protected routes require an `Authorization: Bearer <token>` header.
+All routes are prefixed with `/api`. Protected routes require `Authorization: Bearer <token>`.
 
-| Method | Route | Auth | Role | Description | Request Body | Response (Success snippet) |
-| --- | --- | --- | --- | --- | --- | --- |
-| `POST` | `/auth/register` | No | Any | Register a new user | `{ name, email, password, role }` | `{ success: true, data: { token, user } }` |
-| `POST` | `/auth/login` | No | Any | Sign in to an account | `{ email, password }` | `{ success: true, data: { token, user } }` |
-| `GET` | `/auth/me` | Yes | Any | Get the currently authenticated user | *None* | `{ success: true, data: { ...user } }` |
-| `GET` | `/leads` | Yes | Any | List paginated/filtered leads. Query params: `status`, `source`, `search`, `sort`, `page`, `limit`. Sales see only their own leads. | *None* | `{ data: { leads: [...], total, page, limit, totalPages }}` |
-| `GET` | `/leads/export` | Yes | Any | Retrieve all leads matching filters (no pagination) for CSV generation | *None* | `{ success: true, data: [...] }` |
-| `GET` | `/leads/:id` | Yes | Any | Retrieve a single lead by ID | *None* | `{ success: true, data: { ...lead } }` |
-| `POST` | `/leads` | Yes | Any | Create a new lead | `{ name, email, status?, source }` | `{ success: true, data: { ...lead } }` |
-| `PATCH` | `/leads/:id` | Yes | Any | Update a lead's metadata | `{ name?, email?, status?, source? }` | `{ success: true, data: { ...lead } }` |
-| `PATCH` | `/leads/:id/status` | Yes | Any | Update only the status of a lead | `{ status }` | `{ success: true, data: { ...lead } }` |
-| `DELETE`| `/leads/:id` | Yes | Admin | Permanently delete a lead | *None* | `{ success: true, message: "..." }` |
+| Method | Route | Auth | Role | Description |
+|---|---|---|---|---|
+| `POST` | `/auth/register` | No | — | Register a new user |
+| `POST` | `/auth/login` | No | — | Login and receive JWT |
+| `GET` | `/auth/me` | Yes | Any | Get current user |
+| `GET` | `/leads` | Yes | Any | List leads (paginated, filtered) |
+| `POST` | `/leads` | Yes | Any | Create a lead |
+| `GET` | `/leads/export` | Yes | Any | Export leads as JSON for CSV |
+| `GET` | `/leads/:id` | Yes | Any | Get lead by ID |
+| `PATCH` | `/leads/:id` | Yes | Any | Update lead fields |
+| `PATCH` | `/leads/:id/status` | Yes | Any | Update lead status only |
+| `DELETE` | `/leads/:id` | Yes | Admin | Delete a lead |
+
+Sales users are automatically scoped — they can only read, update, and export their own leads.
 
 ---
 
-## 📂 Folder Structure
+## Folder Structure
 
-```text
+```
 smart-leads/
-├── docker-compose.yml       # Production orchestration
-├── package.json             # Root monorepo definition
-│
-├── client/                  # React Frontend (Vite)
-│   ├── index.html
-│   ├── tailwind.config.js
-│   ├── package.json
-│   └── src/
-│       ├── api/             # Axios instances and endpoint bindings
-│       ├── components/      # Reusable UI widgets and forms
-│       ├── context/         # AuthContext and ThemeContext
-│       ├── hooks/           # Custom React hooks (useDebounce)
-│       ├── pages/           # Route-level page components
-│       ├── types/           # Global frontend TS interfaces
-│       └── utils/           # Helper scripts (csvExport)
-│
-└── server/                  # Node.js API
-    ├── package.json
-    ├── tsconfig.json
+├── docker-compose.yml
+├── package.json
+├── client/
+│   ├── src/
+│   │   ├── api/          # Axios instance and endpoint functions
+│   │   ├── components/   # UI components (LeadTable, LeadForm, Pagination...)
+│   │   ├── context/      # AuthContext, ThemeContext
+│   │   ├── hooks/        # useDebounce
+│   │   ├── pages/        # LoginPage, RegisterPage, DashboardPage, LeadDetailPage
+│   │   ├── types/        # Shared TypeScript interfaces
+│   │   └── utils/        # CSV export helper
+│   └── ...
+└── server/
     └── src/
-        ├── controllers/     # Route business logic handlers
-        ├── middleware/      # Auth, RBAC, and error handlers
-        ├── models/          # Mongoose DB schemas
-        ├── routes/          # Express route definitions
-        ├── types/           # Global backend TS interfaces
-        └── utils/           # Validation and query builders
+        ├── controllers/  # Auth and Lead controllers
+        ├── middleware/    # verifyToken, requireRole, errorHandler
+        ├── models/        # User, Lead Mongoose schemas
+        ├── routes/        # Auth and Lead routes
+        ├── types/         # Shared TypeScript interfaces
+        └── utils/         # JWT helper, query builder
 ```
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
-> **Deployment Status:** `Pending`
-> **Live Link:** `https://your-production-url.com` (Placeholder)
-
-*To deploy to production, utilize the provided multi-stage `Dockerfile` structures within both the `client` and `server` packages to deploy to any cloud provider supporting containers (e.g., AWS ECS, Render, Railway).*
+| Service | Platform | URL |
+|---|---|---|
+| Frontend | Vercel | https://smart-leads-client.vercel.app |
+| Backend API | Vercel | https://smart-leads-server-git-main-kakolibanerjee986-9644s-projects.vercel.app |
+| Database | MongoDB Atlas | M0 Free Cluster |
