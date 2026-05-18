@@ -1,6 +1,7 @@
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
@@ -20,6 +21,16 @@ const PORT = process.env['PORT'] ?? 5000;
 app.use(cors({ origin: process.env['CLIENT_URL'] ?? 'http://localhost:5173', credentials: true }));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// In serverless environments, ensure DB is connected before every request
+if (process.env['VERCEL']) {
+  app.use(async (_req: Request, _res: Response, next: NextFunction) => {
+    if (mongoose.connection.readyState !== 1) {
+      await connectDB();
+    }
+    next();
+  });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Routes
@@ -60,10 +71,6 @@ if (!process.env['VERCEL']) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[server] Failed to start: ${message}`);
     process.exit(1);
-  });
-} else {
-  connectDB().catch((err: unknown) => {
-    console.error('[db] Failed to connect:', err);
   });
 }
 
