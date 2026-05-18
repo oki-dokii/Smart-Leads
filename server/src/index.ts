@@ -55,10 +55,16 @@ const start = async (): Promise<void> => {
   });
 };
 
-start().catch((err: unknown) => {
-  const message = err instanceof Error ? err.message : String(err);
-  console.error(`[server] Failed to start: ${message}`);
-  process.exit(1);
-});
+if (!process.env['VERCEL']) {
+  start().catch((err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[server] Failed to start: ${message}`);
+    process.exit(1);
+  });
+} else {
+  connectDB().catch((err: unknown) => {
+    console.error('[db] Failed to connect:', err);
+  });
+}
 
 export default app;
